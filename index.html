@@ -3,41 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Color Mixer — Code Class</title>
+  <title>🎨 Color Mixer — STEM Day!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d1f;
+      --surface: #16162a;
+      --surface2: #1e1e38;
+      --border: #2e2e52;
+      --accent: #7c6ff7;
+      --accent2: #f7c948;
+      --text: #f0eeff;
+      --muted: #7070a0;
+      --good: #4ade80;
+      --warn: #fb923c;
+      --bad: #f87171;
+      --radius: 18px;
+      --radius-sm: 10px;
+    }
 
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0f0f1a;
-      color: #f0f0f0;
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px 16px;
+      padding: 20px 16px 40px;
+      background-image: radial-gradient(ellipse at 20% 10%, rgba(124,111,247,0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(247,201,72,0.08) 0%, transparent 50%);
     }
 
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 34px;
+      font-weight: 900;
       letter-spacing: -0.5px;
-      margin-bottom: 6px;
+      background: linear-gradient(135deg, #a78bfa, #f7c948, #4ade80);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* TAB BAR */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: var(--surface);
+      border-radius: 50px;
+      padding: 5px;
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: var(--accent);
       color: #fff;
     }
 
-    .subtitle {
-      font-size: 14px;
-      color: #888;
-      margin-bottom: 28px;
-    }
+    /* SCREENS */
+    .screen { display: none; width: 100%; max-width: 620px; }
+    .screen.active { display: block; }
 
-    .game-wrap {
-      width: 100%;
-      max-width: 600px;
-    }
-
-    /* Top row: target / your mix / streak */
+    /* ─── CHALLENGE SCREEN ─── */
     .top-row {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -45,192 +100,195 @@
       margin-bottom: 16px;
     }
 
-    .panel {
-      background: #1a1a2e;
-      border: 1px solid #2a2a45;
-      border-radius: 16px;
-      padding: 14px;
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 12px;
       text-align: center;
     }
 
-    .panel-label {
+    .card-label {
       font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #666;
+      letter-spacing: 1.2px;
+      color: var(--muted);
       margin-bottom: 10px;
     }
 
     .color-box {
-      width: 72px;
-      height: 72px;
-      border-radius: 12px;
+      width: 80px;
+      height: 80px;
+      border-radius: 14px;
       margin: 0 auto 8px;
-      border: 2px solid #2a2a45;
-      transition: background 0.1s;
+      border: 2px solid var(--border);
+      transition: background 0.08s;
     }
 
-    .color-name {
+    .color-label {
       font-size: 13px;
-      font-weight: 600;
-      color: #ccc;
-    }
-
-    .big-num {
-      font-size: 32px;
       font-weight: 700;
-      color: #fff;
-      margin-top: 16px;
+      color: var(--text);
     }
 
-    /* Streak dots */
+    .big-score {
+      font-size: 36px;
+      font-weight: 900;
+      margin-top: 10px;
+      font-family: 'Space Mono', monospace;
+    }
+
     .streak-dots {
       display: flex;
       justify-content: center;
       gap: 6px;
-      margin-top: 14px;
+      margin: 12px 0 4px;
     }
 
     .dot {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: #2a2a45;
-      transition: background 0.3s, transform 0.2s;
+      background: var(--border);
+      transition: background 0.3s, transform 0.25s;
     }
 
     .dot.lit {
-      background: #f0a020;
-      transform: scale(1.2);
+      background: var(--accent2);
+      transform: scale(1.25);
+      box-shadow: 0 0 8px rgba(247,201,72,0.5);
+    }
+
+    .streak-num {
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--accent2);
+      font-family: 'Space Mono', monospace;
     }
 
     /* Challenge card */
     .challenge-card {
-      background: #1a1a2e;
-      border: 1px solid #2a2a45;
-      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       padding: 16px 20px;
       margin-bottom: 16px;
+      transition: border-color 0.4s, box-shadow 0.4s;
     }
 
-    .challenge-badge {
+    .challenge-card.win {
+      border-color: var(--good);
+      box-shadow: 0 0 24px rgba(74,222,128,0.25);
+    }
+
+    .badge {
       display: inline-block;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      background: #1e3a5f;
-      color: #7eb8f7;
+      padding: 4px 14px;
+      border-radius: 50px;
+      background: rgba(124,111,247,0.2);
+      color: #a78bfa;
       margin-bottom: 10px;
     }
 
     .challenge-text {
-      font-size: 15px;
+      font-size: 16px;
+      font-weight: 600;
       line-height: 1.5;
-      color: #ddd;
+      color: var(--text);
     }
 
-    .hints-area {
-      margin-top: 10px;
-    }
+    .hints-area { margin-top: 10px; }
 
-    .hint-item {
-      font-size: 13px;
-      color: #aaa;
-      padding: 4px 0 4px 18px;
+    .hint {
+      font-size: 14px;
+      color: #bbb;
+      padding: 5px 0 5px 20px;
       position: relative;
+      font-weight: 600;
     }
 
-    .hint-item::before {
+    .hint::before {
       content: '→';
       position: absolute;
       left: 0;
-      color: #f0a020;
+      color: var(--accent2);
     }
 
     /* Sliders */
     .sliders-card {
-      background: #1a1a2e;
-      border: 1px solid #2a2a45;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      margin-bottom: 14px;
     }
 
     .slider-row {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 14px;
+      margin-bottom: 18px;
     }
 
     .slider-row:last-child { margin-bottom: 0; }
 
-    .slider-swatch {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
+    .swatch { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
 
-    .slider-letter {
-      font-size: 14px;
-      font-weight: 700;
-      width: 14px;
+    .s-letter {
+      font-size: 16px;
+      font-weight: 900;
+      width: 16px;
       flex-shrink: 0;
+      font-family: 'Space Mono', monospace;
     }
 
     input[type=range] {
       flex: 1;
       -webkit-appearance: none;
-      appearance: none;
-      height: 6px;
-      border-radius: 3px;
-      background: #2a2a45;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--border);
       outline: none;
       cursor: pointer;
     }
 
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      appearance: none;
-      width: 22px;
-      height: 22px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       background: #fff;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+      transition: transform 0.1s;
     }
 
-    #r { accent-color: #e05050; }
-    #g { accent-color: #50c878; }
-    #b { accent-color: #5090e0; }
+    input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
 
-    .slider-val {
-      font-size: 14px;
-      font-weight: 600;
-      min-width: 34px;
+    .s-val {
+      font-size: 16px;
+      font-weight: 700;
+      min-width: 38px;
       text-align: right;
-      color: #aaa;
-      font-family: monospace;
+      font-family: 'Space Mono', monospace;
+      color: var(--text);
     }
 
     /* Feedback */
     #feedback {
+      font-size: 18px;
+      font-weight: 800;
       text-align: center;
-      font-size: 15px;
-      font-weight: 600;
-      min-height: 26px;
-      color: #aaa;
+      min-height: 30px;
       margin-bottom: 14px;
       transition: color 0.3s;
+      color: var(--muted);
     }
-
-    #feedback.good { color: #50c878; }
-    #feedback.close { color: #f0a020; }
-    #feedback.far { color: #e05050; }
 
     /* Buttons */
     .btn-row {
@@ -239,386 +297,676 @@
       margin-bottom: 16px;
     }
 
-    button {
+    .btn {
       flex: 1;
-      padding: 12px 8px;
-      border-radius: 12px;
-      border: 1px solid #3a3a60;
-      background: #1a1a2e;
-      color: #ddd;
-      font-size: 14px;
-      font-weight: 600;
+      padding: 15px 10px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 800;
       cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
+      font-family: 'Nunito', sans-serif;
+      transition: background 0.15s, transform 0.1s, border-color 0.15s;
     }
 
-    button:hover { background: #25253d; }
-    button:active { transform: scale(0.97); }
+    .btn:hover { background: var(--surface2); border-color: var(--accent); }
+    .btn:active { transform: scale(0.96); }
 
-    button.primary {
-      background: #1e3a5f;
-      border-color: #3a6a9f;
-      color: #7eb8f7;
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
     }
 
-    button.primary:hover { background: #254878; }
+    .btn.primary:hover { background: #9585f8; }
 
     /* Code panel */
     .code-panel {
-      background: #0a0a14;
-      border: 1px solid #2a2a45;
-      border-left: 3px solid #378add;
-      border-radius: 0 12px 12px 0;
-      padding: 14px 16px;
+      background: #080814;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 16px 18px;
     }
 
-    .code-label {
+    .code-tag {
       font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: #555;
+      color: var(--muted);
       margin-bottom: 6px;
     }
 
     .code-line {
-      font-family: 'Courier New', monospace;
+      font-family: 'Space Mono', monospace;
       font-size: 16px;
-      color: #7eb8f7;
+      color: #a78bfa;
+      word-break: break-all;
     }
 
-    .code-line .kw { color: #c792ea; }
-    .code-line .num-r { color: #f07070; }
-    .code-line .num-g { color: #70c880; }
-    .code-line .num-b { color: #7090e0; }
+    .num-r { color: #f87171; font-weight: 700; }
+    .num-g { color: #4ade80; font-weight: 700; }
+    .num-b { color: #60a5fa; font-weight: 700; }
+    .kw { color: #f7c948; }
 
-    .target-code-row {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #1a1a2e;
+    .target-reveal {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
       display: none;
     }
 
-    .target-code-row .code-line { color: #50c878; }
+    .target-reveal .code-line { color: var(--good); }
 
-    /* Win flash */
-    @keyframes flashWin {
-      0% { border-color: #2a2a45; }
-      50% { border-color: #50c878; box-shadow: 0 0 20px rgba(80,200,120,0.3); }
-      100% { border-color: #2a2a45; }
+    /* ─── FREE PAINT SCREEN ─── */
+    #paint-screen .sliders-card { margin-bottom: 14px; }
+
+    .paint-preview {
+      width: 100%;
+      height: 200px;
+      border-radius: var(--radius);
+      border: 2px solid var(--border);
+      margin-bottom: 16px;
+      transition: background 0.05s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      color: rgba(255,255,255,0.85);
     }
-    .win-flash { animation: flashWin 0.6s ease; }
+
+    .saved-colors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+      min-height: 52px;
+    }
+
+    .saved-swatch {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.15s;
+      position: relative;
+    }
+
+    .saved-swatch:hover { transform: scale(1.15); }
+
+    .paint-code {
+      background: #080814;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--good);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+    }
+
+    /* ─── HOW IT WORKS SCREEN ─── */
+    .explainer { max-width: 620px; }
+
+    .explain-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+
+    .explain-block h3 {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .explain-block p {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.6;
+      color: #bbb;
+    }
+
+    .pixel-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 3px;
+      margin: 14px 0;
+    }
+
+    .pixel {
+      aspect-ratio: 1;
+      border-radius: 3px;
+    }
+
+    .fun-fact {
+      background: rgba(124,111,247,0.15);
+      border: 1px solid rgba(124,111,247,0.3);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #c4b5fd;
+      margin-top: 12px;
+    }
+
+    .color-examples {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .color-ex {
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* Confetti burst */
+    .confetti-wrap {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 999;
+      overflow: hidden;
+    }
+
+    .conf {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
   </style>
 </head>
 <body>
 
-  <h1>Color Mixer</h1>
-  <p class="subtitle">mix red + green + blue numbers to match the target color</p>
+<div class="header">
+  <h1>🎨 Color Mixer</h1>
+  <p>STEM Day — computers speak in numbers!</p>
+</div>
 
-  <div class="game-wrap">
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('challenge')">🎯 Challenges</button>
+  <button class="tab" onclick="switchTab('paint')">🖌️ Free Paint</button>
+  <button class="tab" onclick="switchTab('how')">🤔 How It Works</button>
+</div>
 
-    <div class="top-row">
-      <div class="panel">
-        <div class="panel-label">match this</div>
-        <div class="color-box" id="target-box"></div>
-        <div class="color-name" id="target-name"></div>
-      </div>
-      <div class="panel">
-        <div class="panel-label">your mix</div>
-        <div class="color-box" id="mix-box"></div>
-        <div class="big-num" id="score-display">—</div>
-      </div>
-      <div class="panel">
-        <div class="panel-label">streak 🔥</div>
-        <div class="streak-dots" id="streak-dots"></div>
-        <div class="big-num" id="streak-count">0</div>
+<!-- ══════════════════════════════════════
+     CHALLENGE SCREEN
+══════════════════════════════════════ -->
+<div class="screen active" id="challenge-screen">
+
+  <div class="top-row">
+    <div class="card">
+      <div class="card-label">match this</div>
+      <div class="color-box" id="target-box"></div>
+      <div class="color-label" id="target-name"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">your mix</div>
+      <div class="color-box" id="mix-box"></div>
+      <div class="big-score" id="score-display">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">🔥 streak</div>
+      <div class="streak-dots" id="streak-dots"></div>
+      <div class="streak-num" id="streak-num">0</div>
+    </div>
+  </div>
+
+  <div class="challenge-card" id="challenge-card">
+    <div class="badge" id="challenge-badge">challenge 1</div>
+    <div class="challenge-text" id="challenge-text"></div>
+    <div class="hints-area" id="hints-area"></div>
+  </div>
+
+  <div class="sliders-card">
+    <div class="slider-row">
+      <div class="swatch" style="background:#f87171;"></div>
+      <span class="s-letter" style="color:#f87171;">R</span>
+      <input type="range" id="r" min="0" max="255" value="128" step="1" />
+      <span class="s-val" id="r-val">128</span>
+    </div>
+    <div class="slider-row">
+      <div class="swatch" style="background:#4ade80;"></div>
+      <span class="s-letter" style="color:#4ade80;">G</span>
+      <input type="range" id="g" min="0" max="255" value="128" step="1" />
+      <span class="s-val" id="g-val">128</span>
+    </div>
+    <div class="slider-row">
+      <div class="swatch" style="background:#60a5fa;"></div>
+      <span class="s-letter" style="color:#60a5fa;">B</span>
+      <input type="range" id="b" min="0" max="255" value="128" step="1" />
+      <span class="s-val" id="b-val">128</span>
+    </div>
+  </div>
+
+  <div id="feedback">slide the colors to match!</div>
+
+  <div class="btn-row">
+    <button class="btn primary" onclick="checkMatch()">✓ Check My Mix</button>
+    <button class="btn" onclick="showHint()">💡 Hint</button>
+    <button class="btn" onclick="nextChallenge()">Skip →</button>
+  </div>
+
+  <div class="code-panel">
+    <div class="code-tag">live code — updates as you slide ↓</div>
+    <div class="code-line" id="live-code"></div>
+    <div class="target-reveal" id="target-reveal">
+      <div class="code-tag">answer code</div>
+      <div class="code-line" id="target-code"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     FREE PAINT SCREEN
+══════════════════════════════════════ -->
+<div class="screen" id="paint-screen">
+
+  <div class="paint-preview" id="paint-preview">
+    your color!
+  </div>
+
+  <div class="sliders-card">
+    <div class="slider-row">
+      <div class="swatch" style="background:#f87171;"></div>
+      <span class="s-letter" style="color:#f87171;">R</span>
+      <input type="range" id="pr" min="0" max="255" value="150" step="1" />
+      <span class="s-val" id="pr-val">150</span>
+    </div>
+    <div class="slider-row">
+      <div class="swatch" style="background:#4ade80;"></div>
+      <span class="s-letter" style="color:#4ade80;">G</span>
+      <input type="range" id="pg" min="0" max="255" value="100" step="1" />
+      <span class="s-val" id="pg-val">100</span>
+    </div>
+    <div class="slider-row">
+      <div class="swatch" style="background:#60a5fa;"></div>
+      <span class="s-letter" style="color:#60a5fa;">B</span>
+      <input type="range" id="pb" min="0" max="255" value="200" step="1" />
+      <span class="s-val" id="pb-val">200</span>
+    </div>
+  </div>
+
+  <div class="paint-code">
+    <div class="code-tag">your color's code</div>
+    <div class="code-line" id="paint-code-line"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn primary" onclick="saveColor()">💾 Save This Color</button>
+    <button class="btn" onclick="randomColor()">🎲 Surprise Me!</button>
+  </div>
+
+  <div class="code-tag" style="margin-bottom:8px; padding-left:4px;">saved colors (tap to load)</div>
+  <div class="saved-colors" id="saved-colors">
+    <div style="color:var(--muted); font-size:13px; font-weight:600; padding:14px 0;">
+      save some colors to see them here!
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     HOW IT WORKS SCREEN
+══════════════════════════════════════ -->
+<div class="screen" id="how-screen">
+  <div class="explainer">
+
+    <div class="explain-block">
+      <h3>📺 Your screen is made of tiny dots</h3>
+      <p>Every screen — your TV, phone, this computer — is made of millions of tiny lights called <strong>pixels</strong>. Each pixel can glow red, green, or blue. When they mix, you see every color!</p>
+      <div class="pixel-grid" id="pixel-demo"></div>
+      <p>Each square above is one pixel. Move the sliders on the Challenges screen to change what color they glow.</p>
+    </div>
+
+    <div class="explain-block">
+      <h3>🔢 Computers count from 0 to 255</h3>
+      <p>Computers love numbers. For colors, each of R, G, and B gets a number from <strong>0</strong> (off / dark) to <strong>255</strong> (full blast). That's 256 choices for each, which gives us over <strong>16 million</strong> possible colors!</p>
+      <div class="fun-fact">256 × 256 × 256 = 16,777,216 colors. That's more than any box of crayons! 🖍️</div>
+    </div>
+
+    <div class="explain-block">
+      <h3>🎨 Screen colors vs paint colors</h3>
+      <p>Mixing paint and mixing light work <em>differently</em>. That's why some colors are surprises!</p>
+      <div class="color-examples">
+        <div class="color-ex" style="background:rgb(255,255,0); color:#5a4a00;">
+          Red + Green = Yellow 😲<br>
+          <span style="font-size:12px; opacity:0.8;">rgb(255, 255, 0)</span>
+        </div>
+        <div class="color-ex" style="background:rgb(255,255,255); color:#333;">
+          All colors = White ✨<br>
+          <span style="font-size:12px; opacity:0.5;">rgb(255, 255, 255)</span>
+        </div>
+        <div class="color-ex" style="background:rgb(0,0,0); color:#aaa; border: 1px solid #333;">
+          No colors = Black 🌑<br>
+          <span style="font-size:12px; opacity:0.5;">rgb(0, 0, 0)</span>
+        </div>
+        <div class="color-ex" style="background:rgb(255,0,255); color:#5a0050;">
+          Red + Blue = Pink/Magenta 💜<br>
+          <span style="font-size:12px; opacity:0.7;">rgb(255, 0, 255)</span>
+        </div>
       </div>
     </div>
 
-    <div class="challenge-card" id="challenge-card">
-      <div class="challenge-badge" id="challenge-badge">challenge 1</div>
-      <div class="challenge-text" id="challenge-text"></div>
-      <div class="hints-area" id="hints-area"></div>
-    </div>
-
-    <div class="sliders-card">
-      <div class="slider-row">
-        <div class="slider-swatch" style="background:#e05050;"></div>
-        <span class="slider-letter" style="color:#e05050;">R</span>
-        <input type="range" id="r" min="0" max="255" value="128" step="1" />
-        <span class="slider-val" id="r-val">128</span>
+    <div class="explain-block">
+      <h3>💻 This is real code!</h3>
+      <p>When coders style a website, they write exactly what you see in the game. For example, to make the background of a button red, a coder types:</p>
+      <div style="background:#080814; border-radius:10px; padding:14px 16px; margin-top:12px; font-family:'Space Mono',monospace; font-size:14px; line-height:1.8;">
+        <span style="color:#f7c948;">background-color</span>:
+        <span style="color:#4ade80;">rgb</span>(<span style="color:#f87171;">255</span>, <span style="color:#4ade80;">0</span>, <span style="color:#60a5fa;">0</span>);<br>
+        <span style="color:#f7c948;">background-color</span>:
+        <span style="color:#4ade80;">rgb</span>(<span style="color:#f87171;">255</span>, <span style="color:#4ade80;">140</span>, <span style="color:#60a5fa;">0</span>); <span style="color:#555;">/* orange! */</span>
       </div>
-      <div class="slider-row">
-        <div class="slider-swatch" style="background:#50c878;"></div>
-        <span class="slider-letter" style="color:#50c878;">G</span>
-        <input type="range" id="g" min="0" max="255" value="128" step="1" />
-        <span class="slider-val" id="g-val">128</span>
-      </div>
-      <div class="slider-row">
-        <div class="slider-swatch" style="background:#5090e0;"></div>
-        <span class="slider-letter" style="color:#5090e0;">B</span>
-        <input type="range" id="b" min="0" max="255" value="128" step="1" />
-        <span class="slider-val" id="b-val">128</span>
-      </div>
-    </div>
-
-    <div id="feedback"></div>
-
-    <div class="btn-row">
-      <button class="primary" onclick="checkMatch()">✓ check my mix</button>
-      <button onclick="showHint()">💡 hint</button>
-      <button onclick="nextChallenge()">skip →</button>
-    </div>
-
-    <div class="code-panel">
-      <div class="code-label">live code — updates as you slide</div>
-      <div class="code-line" id="live-code"></div>
-      <div class="target-code-row" id="target-code-row">
-        <div class="code-label" style="margin-top:0;">target color code</div>
-        <div class="code-line" id="target-code"></div>
-      </div>
+      <div class="fun-fact">Every color on every website was written as numbers just like these. You already know how to do it! 🚀</div>
     </div>
 
   </div>
+</div>
 
-  <script>
-    const challenges = [
-      {
-        name: "pure red",
-        r: 255, g: 0, b: 0,
-        text: "Make pure red! Drag R all the way up, and put G and B all the way down.",
-        hints: [
-          "R = 255 means full red",
-          "G and B should both be 0",
-          "Think of a fire truck!"
-        ]
-      },
-      {
-        name: "pure blue",
-        r: 0, g: 0, b: 255,
-        text: "Now make pure blue! Only one slider goes up this time.",
-        hints: [
-          "Only the B slider goes up",
-          "R and G both stay at 0",
-          "Think of the ocean!"
-        ]
-      },
-      {
-        name: "yellow",
-        r: 255, g: 255, b: 0,
-        text: "Yellow is sneaky — there's no yellow slider! Can you figure it out?",
-        hints: [
-          "On screens, Red + Green = Yellow",
-          "B stays at 0",
-          "Both R and G go all the way to 255!"
-        ]
-      },
-      {
-        name: "white",
-        r: 255, g: 255, b: 255,
-        text: "Can you make white? What happens when ALL three colors are full?",
-        hints: [
-          "All three sliders go to max",
-          "255, 255, 255",
-          "All light mixed together = white!"
-        ]
-      },
-      {
-        name: "black",
-        r: 0, g: 0, b: 0,
-        text: "Make complete darkness — the absence of all color and light.",
-        hints: [
-          "All sliders go to zero",
-          "0, 0, 0",
-          "No light at all = black!"
-        ]
-      },
-      {
-        name: "orange",
-        r: 255, g: 140, b: 0,
-        text: "Orange — there's no orange slider! You have to mix it from what you have.",
-        hints: [
-          "Start with R all the way up",
-          "Add some G — try around 140",
-          "Keep B at zero"
-        ]
-      },
-      {
-        name: "purple",
-        r: 128, g: 0, b: 128,
-        text: "Mix purple using only two sliders. Which two colors make purple?",
-        hints: [
-          "Red and Blue make purple",
-          "G stays at 0",
-          "Try R and B both at 128"
-        ]
-      },
-      {
-        name: "sky blue",
-        r: 135, g: 206, b: 235,
-        text: "Match the color of a clear sky on a sunny day!",
-        hints: [
-          "Blue is the highest — near 235",
-          "Green is second — around 200",
-          "Red is lower — around 135"
-        ]
-      },
-      {
-        name: "hot pink",
-        r: 255, g: 20, b: 147,
-        text: "Make hot pink — bright and bold. Mostly red with a twist of blue.",
-        hints: [
-          "R goes all the way to 255",
-          "B goes medium-high, around 147",
-          "G stays very low — around 20"
-        ]
-      },
-      {
-        name: "lime green",
-        r: 50, g: 205, b: 50,
-        text: "Bright lime green — the color of a highlighter marker!",
-        hints: [
-          "G is very high — around 205",
-          "R and B are both low and equal",
-          "Try R = 50, B = 50"
-        ]
-      }
-    ];
+<!-- Confetti container -->
+<div class="confetti-wrap" id="confetti-wrap"></div>
 
-    let current = 0;
-    let streak = 0;
-    let hintIndex = 0;
-    let checkedThisRound = false;
+<script>
+  // ─── DATA ───────────────────────────────────────────
+  const challenges = [
+    { name:"pure red", r:255, g:0, b:0,
+      text:"Make pure red! Drag R all the way up and put G and B all the way down.",
+      hints:["R = 255 means full red power!","G and B should both be 0","Think of a fire truck 🚒"] },
+    { name:"pure blue", r:0, g:0, b:255,
+      text:"Make pure blue! Only one slider needs to go up this time.",
+      hints:["Only the B slider goes up","R and G both stay at 0","Think of the deep ocean 🌊"] },
+    { name:"yellow", r:255, g:255, b:0,
+      text:"Yellow is sneaky — there's no yellow slider! How can you make it?",
+      hints:["On screens, Red + Green = Yellow (no joke!)","B stays at 0","Both R and G go all the way to 255"] },
+    { name:"white", r:255, g:255, b:255,
+      text:"Can you make white? What happens when ALL the colors are cranked to max?",
+      hints:["All three sliders go to 255","255, 255, 255","Mix all the light together = white! ✨"] },
+    { name:"black", r:0, g:0, b:0,
+      text:"Now make complete darkness. What happens when there's no light at all?",
+      hints:["All sliders go to zero","0, 0, 0","No light = black 🌑"] },
+    { name:"orange", r:255, g:140, b:0,
+      text:"Orange is tricky — no orange slider exists! You gotta mix it yourself.",
+      hints:["Start with R all the way up (255)","Add some G — try sliding to around 140","Keep B at zero the whole time"] },
+    { name:"purple", r:128, g:0, b:128,
+      text:"Make purple using only two sliders. Which two colors mix to make purple?",
+      hints:["Red and Blue make purple!","G stays at 0 the whole time","Try R and B both around 128"] },
+    { name:"sky blue", r:135, g:206, b:235,
+      text:"Match the color of a perfect sunny sky!",
+      hints:["Blue is the highest — around 235","Green is second — around 206","Red is lower — around 135"] },
+    { name:"hot pink", r:255, g:20, b:147,
+      text:"Make hot pink — bright and bold like a neon sign!",
+      hints:["R goes all the way to 255","B goes medium-high — around 147","G stays really low — about 20"] },
+    { name:"lime green", r:50, g:205, b:50,
+      text:"Bright lime green — like a highlighter marker! 💚",
+      hints:["G is very high — around 205","R and B are low and equal","Try R=50, G=205, B=50"] },
+  ];
 
-    function buildStreakDots() {
-      const el = document.getElementById('streak-dots');
-      el.innerHTML = '';
-      for (let i = 0; i < 5; i++) {
-        const d = document.createElement('div');
-        d.className = 'dot' + (i < streak ? ' lit' : '');
-        d.id = 'dot' + i;
-        el.appendChild(d);
-      }
+  let current = 0, streak = 0, hintIndex = 0, checkedRound = false;
+
+  // ─── TAB SWITCHING ───────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(name + '-screen').classList.add('active');
+    event.target.classList.add('active');
+    if (name === 'how') buildPixelDemo();
+    if (name === 'paint') updatePaint();
+  }
+
+  // ─── STREAK DOTS ─────────────────────────────────────
+  function buildDots() {
+    const el = document.getElementById('streak-dots');
+    el.innerHTML = '';
+    for (let i = 0; i < 5; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i < streak ? ' lit' : '');
+      d.id = 'sd' + i;
+      el.appendChild(d);
+    }
+  }
+
+  function refreshDots() {
+    document.getElementById('streak-num').textContent = streak;
+    for (let i = 0; i < 5; i++) {
+      const d = document.getElementById('sd' + i);
+      if (d) d.className = 'dot' + (i < streak ? ' lit' : '');
+    }
+  }
+
+  // ─── CHALLENGE LOGIC ─────────────────────────────────
+  function loadChallenge(i) {
+    const c = challenges[i % challenges.length];
+    document.getElementById('challenge-badge').textContent = 'challenge ' + (i + 1);
+    document.getElementById('challenge-text').textContent = c.text;
+    document.getElementById('target-box').style.background = `rgb(${c.r},${c.g},${c.b})`;
+    document.getElementById('target-name').textContent = c.name;
+    document.getElementById('hints-area').innerHTML = '';
+    document.getElementById('feedback').textContent = 'slide the colors to match!';
+    document.getElementById('feedback').style.color = 'var(--muted)';
+    document.getElementById('score-display').textContent = '—';
+    document.getElementById('target-reveal').style.display = 'none';
+    document.getElementById('challenge-card').classList.remove('win');
+    hintIndex = 0;
+    checkedRound = false;
+    document.getElementById('r').value = 128;
+    document.getElementById('g').value = 128;
+    document.getElementById('b').value = 128;
+    updateChallengeMix();
+  }
+
+  function updateChallengeMix() {
+    const r = +document.getElementById('r').value;
+    const g = +document.getElementById('g').value;
+    const b = +document.getElementById('b').value;
+    document.getElementById('r-val').textContent = r;
+    document.getElementById('g-val').textContent = g;
+    document.getElementById('b-val').textContent = b;
+    document.getElementById('mix-box').style.background = `rgb(${r},${g},${b})`;
+    document.getElementById('live-code').innerHTML = codeHTML(r, g, b, 'color');
+  }
+
+  function checkMatch() {
+    const c = challenges[current % challenges.length];
+    const r = +document.getElementById('r').value;
+    const g = +document.getElementById('g').value;
+    const b = +document.getElementById('b').value;
+    const diff = Math.abs(r - c.r) + Math.abs(g - c.g) + Math.abs(b - c.b);
+    const score = Math.max(0, Math.round(100 - diff / 7.65));
+    document.getElementById('score-display').textContent = score + '%';
+
+    const fb = document.getElementById('feedback');
+    const won = score >= 88;
+
+    const msgs = {
+      100: ["PERFECT! That's the exact code! 🤯", "NAILED IT! You're basically a programmer now! 💻", "100%!! Did you peek at the answer?? 😂"],
+      win: ["So close to perfect — coding skills unlocked! 🔓", "Amazing!! Almost pixel-perfect! ✨", "Your screen's brain just got smarter 🧠"],
+      close: ["Getting warmer! Try nudging one slider a tiny bit 🔥", "Ooh SO close! Which slider feels off? 🤔", "Almost there — small adjustments! 👀"],
+      mid: ["Getting there! Check the hints for clues 🕵️", "You're learning the code language! Keep going 💪", "Good experiment! Colors are tricky — use a hint!"],
+      far: ["Every try teaches you something! Don't give up 🌈", "Coding is all about experimenting! Keep sliding!", "You're thinking like a programmer already 🤖"]
+    };
+
+    let msgGroup = score === 100 ? msgs[100] : won ? msgs.win : score >= 70 ? msgs.close : score >= 45 ? msgs.mid : msgs.far;
+    fb.textContent = msgGroup[Math.floor(Math.random() * msgGroup.length)];
+    fb.style.color = won ? 'var(--good)' : score >= 70 ? 'var(--warn)' : score >= 45 ? 'var(--warn)' : 'var(--bad)';
+
+    const c2 = challenges[current % challenges.length];
+    document.getElementById('target-code').innerHTML = codeHTML(c2.r, c2.g, c2.b, 'color');
+    document.getElementById('target-reveal').style.display = 'block';
+
+    if (!checkedRound) {
+      streak = won ? Math.min(streak + 1, 5) : 0;
+      refreshDots();
+      checkedRound = true;
     }
 
-    function updateStreakDisplay() {
-      document.getElementById('streak-count').textContent = streak;
-      for (let i = 0; i < 5; i++) {
-        const d = document.getElementById('dot' + i);
-        if (d) d.className = 'dot' + (i < streak ? ' lit' : '');
-      }
+    if (won) {
+      document.getElementById('challenge-card').classList.add('win');
+      if (score === 100) confetti();
+      setTimeout(nextChallenge, 1600);
     }
+  }
 
-    function loadChallenge(index) {
-      const c = challenges[index % challenges.length];
-      document.getElementById('challenge-badge').textContent = 'challenge ' + (index + 1);
-      document.getElementById('challenge-text').textContent = c.text;
-      document.getElementById('target-box').style.background = `rgb(${c.r},${c.g},${c.b})`;
-      document.getElementById('target-name').textContent = c.name;
-      document.getElementById('hints-area').innerHTML = '';
-      document.getElementById('feedback').textContent = '';
-      document.getElementById('feedback').className = '';
-      document.getElementById('score-display').textContent = '—';
-      document.getElementById('target-code-row').style.display = 'none';
-      hintIndex = 0;
-      checkedThisRound = false;
-
-      document.getElementById('r').value = 128;
-      document.getElementById('g').value = 128;
-      document.getElementById('b').value = 128;
-      updateMix();
+  function showHint() {
+    const c = challenges[current % challenges.length];
+    if (hintIndex >= c.hints.length) {
+      document.getElementById('feedback').textContent = "No more hints — you got this! 💪";
+      document.getElementById('feedback').style.color = 'var(--warn)';
+      return;
     }
+    const area = document.getElementById('hints-area');
+    const d = document.createElement('div');
+    d.className = 'hint';
+    d.textContent = c.hints[hintIndex];
+    area.appendChild(d);
+    hintIndex++;
+  }
 
-    function updateMix() {
-      const r = +document.getElementById('r').value;
-      const g = +document.getElementById('g').value;
-      const b = +document.getElementById('b').value;
-      document.getElementById('r-val').textContent = r;
-      document.getElementById('g-val').textContent = g;
-      document.getElementById('b-val').textContent = b;
-      document.getElementById('mix-box').style.background = `rgb(${r},${g},${b})`;
-      document.getElementById('live-code').innerHTML =
-        `<span class="kw">color</span> = rgb(<span class="num-r">${r}</span>, <span class="num-g">${g}</span>, <span class="num-b">${b}</span>)`;
+  function nextChallenge() {
+    current++;
+    loadChallenge(current);
+  }
+
+  ['r','g','b'].forEach(id => document.getElementById(id).addEventListener('input', updateChallengeMix));
+
+  // ─── FREE PAINT ───────────────────────────────────────
+  let savedColors = [];
+
+  function updatePaint() {
+    const r = +document.getElementById('pr').value;
+    const g = +document.getElementById('pg').value;
+    const b = +document.getElementById('pb').value;
+    document.getElementById('pr-val').textContent = r;
+    document.getElementById('pg-val').textContent = g;
+    document.getElementById('pb-val').textContent = b;
+    const preview = document.getElementById('paint-preview');
+    preview.style.background = `rgb(${r},${g},${b})`;
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    preview.style.color = brightness > 128 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)';
+    preview.textContent = nameColor(r, g, b);
+    document.getElementById('paint-code-line').innerHTML = codeHTML(r, g, b, 'background-color');
+  }
+
+  function saveColor() {
+    const r = +document.getElementById('pr').value;
+    const g = +document.getElementById('pg').value;
+    const b = +document.getElementById('pb').value;
+    savedColors.push({r, g, b});
+    renderSaved();
+  }
+
+  function randomColor() {
+    document.getElementById('pr').value = Math.floor(Math.random() * 256);
+    document.getElementById('pg').value = Math.floor(Math.random() * 256);
+    document.getElementById('pb').value = Math.floor(Math.random() * 256);
+    updatePaint();
+  }
+
+  function renderSaved() {
+    const el = document.getElementById('saved-colors');
+    if (!savedColors.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:13px;font-weight:600;padding:14px 0;">save some colors to see them here!</div>';
+      return;
     }
-
-    function checkMatch() {
-      const c = challenges[current % challenges.length];
-      const r = +document.getElementById('r').value;
-      const g = +document.getElementById('g').value;
-      const b = +document.getElementById('b').value;
-      const diff = Math.abs(r - c.r) + Math.abs(g - c.g) + Math.abs(b - c.b);
-      const score = Math.max(0, Math.round(100 - diff / 7.65));
-
-      document.getElementById('score-display').textContent = score + '%';
-
-      const fb = document.getElementById('feedback');
-      const won = score >= 88;
-
-      if (score === 100) {
-        fb.textContent = 'PERFECT! You wrote the exact code!';
-        fb.className = 'good';
-      } else if (won) {
-        fb.textContent = 'Amazing match! So close to perfect!';
-        fb.className = 'good';
-      } else if (score >= 70) {
-        fb.textContent = 'So close! Try tweaking one slider a tiny bit.';
-        fb.className = 'close';
-      } else if (score >= 45) {
-        fb.textContent = 'Getting warmer — check the hints!';
-        fb.className = 'close';
-      } else {
-        fb.textContent = 'Keep experimenting — every try is learning!';
-        fb.className = 'far';
-      }
-
-      document.getElementById('target-code').innerHTML =
-        `<span class="kw">color</span> = rgb(<span class="num-r">${c.r}</span>, <span class="num-g">${c.g}</span>, <span class="num-b">${c.b}</span>)`;
-      document.getElementById('target-code-row').style.display = 'block';
-
-      if (!checkedThisRound) {
-        if (won) {
-          streak = Math.min(streak + 1, 5);
-        } else {
-          streak = 0;
-        }
-        updateStreakDisplay();
-        checkedThisRound = true;
-      }
-
-      if (won) {
-        document.getElementById('challenge-card').classList.add('win-flash');
-        setTimeout(() => {
-          document.getElementById('challenge-card').classList.remove('win-flash');
-          nextChallenge();
-        }, 1400);
-      }
-    }
-
-    function showHint() {
-      const c = challenges[current % challenges.length];
-      if (hintIndex >= c.hints.length) {
-        document.getElementById('feedback').textContent = 'No more hints — you got this!';
-        document.getElementById('feedback').className = 'close';
-        return;
-      }
-      const area = document.getElementById('hints-area');
-      const p = document.createElement('div');
-      p.className = 'hint-item';
-      p.textContent = c.hints[hintIndex];
-      area.appendChild(p);
-      hintIndex++;
-    }
-
-    function nextChallenge() {
-      current++;
-      loadChallenge(current);
-    }
-
-    ['r', 'g', 'b'].forEach(id => {
-      document.getElementById(id).addEventListener('input', updateMix);
+    el.innerHTML = '';
+    savedColors.forEach((c, i) => {
+      const s = document.createElement('div');
+      s.className = 'saved-swatch';
+      s.style.background = `rgb(${c.r},${c.g},${c.b})`;
+      s.title = `rgb(${c.r}, ${c.g}, ${c.b})`;
+      s.onclick = () => {
+        document.getElementById('pr').value = c.r;
+        document.getElementById('pg').value = c.g;
+        document.getElementById('pb').value = c.b;
+        updatePaint();
+      };
+      el.appendChild(s);
     });
+  }
 
-    buildStreakDots();
-    loadChallenge(0);
-  </script>
+  function nameColor(r, g, b) {
+    if (r < 20 && g < 20 && b < 20) return 'black 🌑';
+    if (r > 235 && g > 235 && b > 235) return 'white ✨';
+    if (r > 200 && g < 80 && b < 80) return 'red 🔴';
+    if (r < 80 && g > 200 && b < 80) return 'green 💚';
+    if (r < 80 && g < 80 && b > 200) return 'blue 💙';
+    if (r > 200 && g > 200 && b < 80) return 'yellow 💛';
+    if (r > 200 && g < 80 && b > 200) return 'magenta 💜';
+    if (r < 80 && g > 200 && b > 200) return 'cyan 🩵';
+    if (r > 200 && g > 120 && b < 60) return 'orange 🟠';
+    if (r > 180 && g < 100 && b > 180) return 'purple 💜';
+    if (r > 200 && g > 150 && b > 200) return 'pink 🩷';
+    return 'your color!';
+  }
+
+  ['pr','pg','pb'].forEach(id => document.getElementById(id).addEventListener('input', updatePaint));
+
+  // ─── HOW IT WORKS ─────────────────────────────────────
+  function buildPixelDemo() {
+    const grid = document.getElementById('pixel-demo');
+    if (grid.children.length) return;
+    const colors = [
+      [255,0,0],[255,120,0],[255,255,0],[0,200,0],[0,150,255],[100,0,200],[200,0,150],[255,50,50],
+      [255,80,0],[255,200,0],[100,200,0],[0,180,200],[50,50,220],[180,0,200],[255,0,100],[200,100,0],
+      [255,150,0],[200,255,0],[0,220,100],[0,100,220],[120,0,255],[220,0,100],[255,100,0],[0,200,50],
+      [0,50,200],[200,0,200],[255,0,50],[150,200,0],[0,255,150],[0,150,255],[200,100,255],[255,50,150],
+    ];
+    colors.forEach(([r,g,b]) => {
+      const p = document.createElement('div');
+      p.className = 'pixel';
+      p.style.background = `rgb(${r},${g},${b})`;
+      grid.appendChild(p);
+    });
+  }
+
+  // ─── HELPERS ─────────────────────────────────────────
+  function codeHTML(r, g, b, prop) {
+    return `<span class="kw">${prop}</span> = rgb(<span class="num-r">${r}</span>, <span class="num-g">${g}</span>, <span class="num-b">${b}</span>)`;
+  }
+
+  function confetti() {
+    const wrap = document.getElementById('confetti-wrap');
+    const colors = ['#f87171','#4ade80','#60a5fa','#f7c948','#a78bfa','#fb923c','#f472b6'];
+    for (let i = 0; i < 60; i++) {
+      const c = document.createElement('div');
+      c.className = 'conf';
+      c.style.cssText = `
+        left: ${Math.random() * 100}%;
+        top: -10px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        animation-duration: ${0.8 + Math.random() * 1.2}s;
+        animation-delay: ${Math.random() * 0.5}s;
+        transform: rotate(${Math.random()*360}deg);
+        width: ${6 + Math.random()*10}px;
+        height: ${6 + Math.random()*10}px;
+      `;
+      wrap.appendChild(c);
+      setTimeout(() => c.remove(), 2500);
+    }
+  }
+
+  // ─── INIT ─────────────────────────────────────────────
+  buildDots();
+  loadChallenge(0);
+  updatePaint();
+  renderSaved();
+</script>
 </body>
 </html>
