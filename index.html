@@ -434,18 +434,6 @@
       color: #bbb;
     }
 
-    .pixel-grid {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 3px;
-      margin: 14px 0;
-    }
-
-    .pixel {
-      aspect-ratio: 1;
-      border-radius: 3px;
-    }
-
     .fun-fact {
       background: rgba(124,111,247,0.15);
       border: 1px solid rgba(124,111,247,0.3);
@@ -632,9 +620,25 @@
 
     <div class="explain-block">
       <h3>📺 Your screen is made of tiny dots</h3>
-      <p>Every screen — your TV, phone, this computer — is made of millions of tiny lights called <strong>pixels</strong>. Each pixel can glow red, green, or blue. When they mix, you see every color!</p>
-      <div class="pixel-grid" id="pixel-demo"></div>
-      <p>Each square above is one pixel. Move the sliders on the Challenges screen to change what color they glow.</p>
+      <p>Every screen — your TV, phone, this computer — is made of millions of tiny lights called <strong>pixels</strong>. Each pixel is just a colored square with an rgb() number. Drag the magnifier box over the picture below to zoom in and see them!</p>
+
+      <div style="margin: 16px 0 8px; position: relative; user-select: none;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">drag the box 👇</div>
+
+        <div style="position: relative; display: inline-block; width: 100%;">
+          <canvas id="img-canvas" width="560" height="220" style="width:100%; border-radius: 12px; display:block; cursor:crosshair; border: 2px solid var(--border);"></canvas>
+          <div id="drag-box" style="position:absolute; width:80px; height:80px; border: 3px solid #f7c948; border-radius: 8px; box-shadow: 0 0 0 2px rgba(0,0,0,0.5), 0 0 16px rgba(247,201,72,0.4); cursor:grab; top:70px; left:40px; pointer-events:all;"></div>
+        </div>
+
+        <div style="margin-top: 12px;">
+          <div style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">zoomed in — each square is one pixel</div>
+          <canvas id="zoom-canvas" width="560" height="220" style="width:100%; border-radius: 12px; display:block; border: 2px solid var(--border); image-rendering: pixelated;"></canvas>
+        </div>
+
+        <div id="pixel-info" style="margin-top: 10px; background: #080814; border-radius: 10px; padding: 12px 16px; font-family: 'Space Mono', monospace; font-size: 14px; color: #a78bfa; min-height: 42px;"></div>
+      </div>
+
+      <p style="margin-top: 8px;">See how the picture is just a huge grid of colored squares? When there are millions of them and they're super tiny, your eyes blend them into a smooth image!</p>
     </div>
 
     <div class="explain-block">
@@ -918,22 +922,246 @@
 
   ['pr','pg','pb'].forEach(id => document.getElementById(id).addEventListener('input', updatePaint));
 
-  // ─── HOW IT WORKS ─────────────────────────────────────
+  // ─── HOW IT WORKS — PIXEL ZOOM ───────────────────────
+  let pixelDemoBuilt = false;
+
   function buildPixelDemo() {
-    const grid = document.getElementById('pixel-demo');
-    if (grid.children.length) return;
-    const colors = [
-      [255,0,0],[255,120,0],[255,255,0],[0,200,0],[0,150,255],[100,0,200],[200,0,150],[255,50,50],
-      [255,80,0],[255,200,0],[100,200,0],[0,180,200],[50,50,220],[180,0,200],[255,0,100],[200,100,0],
-      [255,150,0],[200,255,0],[0,220,100],[0,100,220],[120,0,255],[220,0,100],[255,100,0],[0,200,50],
-      [0,50,200],[200,0,200],[255,0,50],[150,200,0],[0,255,150],[0,150,255],[200,100,255],[255,50,150],
-    ];
-    colors.forEach(([r,g,b]) => {
-      const p = document.createElement('div');
-      p.className = 'pixel';
-      p.style.background = `rgb(${r},${g},${b})`;
-      grid.appendChild(p);
+    if (pixelDemoBuilt) return;
+    pixelDemoBuilt = true;
+
+    const imgCanvas = document.getElementById('img-canvas');
+    const zoomCanvas = document.getElementById('zoom-canvas');
+    const dragBox = document.getElementById('drag-box');
+    const pixelInfo = document.getElementById('pixel-info');
+    const ic = imgCanvas.getContext('2d');
+    const zc = zoomCanvas.getContext('2d');
+
+    // Draw a colorful synthetic "photo" — a city sunset scene made of shapes
+    const W = 560, H = 220;
+    imgCanvas.width = W; imgCanvas.height = H;
+    zoomCanvas.width = zoomCanvas.offsetWidth || W;
+    zoomCanvas.height = 220;
+
+    function drawScene() {
+      // Sky gradient
+      const sky = ic.createLinearGradient(0, 0, 0, H * 0.65);
+      sky.addColorStop(0, '#1a0533');
+      sky.addColorStop(0.4, '#7c2d6f');
+      sky.addColorStop(0.7, '#f4703a');
+      sky.addColorStop(1, '#fbbf24');
+      ic.fillStyle = sky;
+      ic.fillRect(0, 0, W, H * 0.65);
+
+      // Sun
+      ic.fillStyle = '#ffe066';
+      ic.beginPath();
+      ic.arc(W * 0.72, H * 0.38, 32, 0, Math.PI * 2);
+      ic.fill();
+      ic.fillStyle = 'rgba(255,220,80,0.25)';
+      ic.beginPath();
+      ic.arc(W * 0.72, H * 0.38, 50, 0, Math.PI * 2);
+      ic.fill();
+
+      // Clouds
+      [[80,40,60,18,'rgba(255,180,120,0.55)'],[200,30,80,14,'rgba(255,160,100,0.45)'],[400,50,70,16,'rgba(255,140,80,0.4)']].forEach(([x,y,w,r,col])=>{
+        ic.fillStyle = col;
+        ic.beginPath();
+        ic.ellipse(x, y, w, r, 0, 0, Math.PI*2);
+        ic.fill();
+      });
+
+      // Water / ground reflection
+      const water = ic.createLinearGradient(0, H * 0.65, 0, H);
+      water.addColorStop(0, '#1e3a5f');
+      water.addColorStop(0.5, '#0f2444');
+      water.addColorStop(1, '#070f20');
+      ic.fillStyle = water;
+      ic.fillRect(0, H * 0.65, W, H * 0.35);
+
+      // Sun reflection on water
+      ic.fillStyle = 'rgba(255,180,50,0.18)';
+      ic.beginPath();
+      ic.ellipse(W * 0.72, H * 0.82, 18, 50, 0, 0, Math.PI*2);
+      ic.fill();
+
+      // Buildings silhouette
+      const buildings = [
+        [10, 0.55, 40, 0.65], [55, 0.42, 35, 0.65], [95, 0.5, 28, 0.65],
+        [128, 0.35, 50, 0.65], [182, 0.48, 32, 0.65], [218, 0.38, 45, 0.65],
+        [268, 0.45, 30, 0.65], [302, 0.3, 55, 0.65], [362, 0.43, 40, 0.65],
+        [406, 0.5, 28, 0.65], [438, 0.36, 60, 0.65], [502, 0.44, 35, 0.65],
+        [540, 0.52, 30, 0.65],
+      ];
+      ic.fillStyle = '#0d0d1a';
+      buildings.forEach(([x, topY, w, botY]) => {
+        ic.fillRect(x, H * topY, w, H * (botY - topY));
+      });
+
+      // Windows on buildings
+      ic.fillStyle = '#ffe066';
+      buildings.forEach(([x, topY, w]) => {
+        for (let wy = H * topY + 8; wy < H * 0.63; wy += 12) {
+          for (let wx = x + 4; wx < x + w - 4; wx += 10) {
+            if (Math.random() > 0.45) {
+              ic.fillStyle = Math.random() > 0.3 ? '#ffe066' : '#fb923c';
+              ic.fillRect(wx, wy, 5, 6);
+            }
+          }
+        }
+      });
+
+      // Horizon water shimmer lines
+      ic.strokeStyle = 'rgba(255,180,80,0.12)';
+      ic.lineWidth = 1;
+      for (let i = 0; i < 12; i++) {
+        ic.beginPath();
+        ic.moveTo(0, H * 0.68 + i * 6);
+        ic.lineTo(W, H * 0.68 + i * 6);
+        ic.stroke();
+      }
+    }
+
+    drawScene();
+
+    // ── Drag logic ──────────────────────────────────────
+    const BOX = 80;
+    let bx = 40, by = 70; // box position in display pixels
+    let dragging = false, ox = 0, oy = 0;
+
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    function canvasPos(e) {
+      const rect = imgCanvas.getBoundingClientRect();
+      const scaleX = W / rect.width;
+      const scaleY = H / rect.height;
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        cx: (cx - rect.left) * scaleX,
+        cy: (cy - rect.top) * scaleY,
+        rx: cx - rect.left,
+        ry: cy - rect.top,
+      };
+    }
+
+    function boxDisplaySize() {
+      const rect = imgCanvas.getBoundingClientRect();
+      return { scaleX: rect.width / W, scaleY: rect.height / H };
+    }
+
+    function updateDragBoxStyle() {
+      const { scaleX, scaleY } = boxDisplaySize();
+      dragBox.style.left = (bx * scaleX) + 'px';
+      dragBox.style.top = (by * scaleY) + 'px';
+      dragBox.style.width = (BOX * scaleX) + 'px';
+      dragBox.style.height = (BOX * scaleY) + 'px';
+    }
+
+    function drawZoom() {
+      const PIXEL_SIZE = 16; // each src pixel → 16×16 on zoom canvas
+      const cols = Math.floor(BOX / PIXEL_SIZE);
+      const rows = Math.floor(BOX / PIXEL_SIZE);
+      const srcData = ic.getImageData(bx, by, BOX, BOX);
+
+      const zw = zoomCanvas.offsetWidth || W;
+      const zh = 220;
+      zoomCanvas.width = zw;
+      zoomCanvas.height = zh;
+      zc.fillStyle = '#070f20';
+      zc.fillRect(0, 0, zw, zh);
+
+      const cellW = zw / cols;
+      const cellH = zh / rows;
+
+      let hoverInfo = '';
+      const centerCol = Math.floor(cols / 2);
+      const centerRow = Math.floor(rows / 2);
+
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const srcX = Math.floor(col * (BOX / cols));
+          const srcY = Math.floor(row * (BOX / rows));
+          const idx = (srcY * BOX + srcX) * 4;
+          const r = srcData.data[idx];
+          const g = srcData.data[idx + 1];
+          const b = srcData.data[idx + 2];
+
+          const px = col * cellW;
+          const py = row * cellH;
+
+          zc.fillStyle = `rgb(${r},${g},${b})`;
+          zc.fillRect(px, py, cellW - 1, cellH - 1);
+
+          // Grid lines
+          zc.strokeStyle = 'rgba(0,0,0,0.4)';
+          zc.lineWidth = 0.5;
+          zc.strokeRect(px, py, cellW - 1, cellH - 1);
+
+          // Highlight center pixel
+          if (col === centerCol && row === centerRow) {
+            zc.strokeStyle = '#f7c948';
+            zc.lineWidth = 2.5;
+            zc.strokeRect(px + 1, py + 1, cellW - 3, cellH - 3);
+            hoverInfo = `center pixel → rgb(${r}, ${g}, ${b})`;
+
+            // Show rgb label if cell big enough
+            if (cellW > 40) {
+              zc.fillStyle = brightness(r,g,b) > 128 ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)';
+              zc.font = `bold ${Math.min(10, cellW / 5)}px monospace`;
+              zc.textAlign = 'center';
+              zc.fillText(`${r},${g},${b}`, px + cellW / 2, py + cellH / 2 + 4);
+            }
+          }
+        }
+      }
+
+      pixelInfo.innerHTML = hoverInfo
+        ? `center pixel: <span style="color:#f7c948">rgb(<span style="color:#f87171">${hoverInfo.match(/\d+/g)[0]}</span>, <span style="color:#4ade80">${hoverInfo.match(/\d+/g)[1]}</span>, <span style="color:#60a5fa">${hoverInfo.match(/\d+/g)[2]}</span>)</span> — one tiny dot of color`
+        : '';
+    }
+
+    function brightness(r,g,b) { return (r*299+g*587+b*114)/1000; }
+
+    function onMove(e) {
+      if (!dragging) return;
+      e.preventDefault();
+      const rect = imgCanvas.getBoundingClientRect();
+      const scaleX = W / rect.width;
+      const scaleY = H / rect.height;
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      bx = clamp((cx - rect.left) * scaleX - ox, 0, W - BOX);
+      by = clamp((cy - rect.top) * scaleY - oy, 0, H - BOX);
+      updateDragBoxStyle();
+      drawZoom();
+    }
+
+    dragBox.addEventListener('mousedown', e => {
+      dragging = true;
+      dragBox.style.cursor = 'grabbing';
+      const { scaleX, scaleY } = boxDisplaySize();
+      const rect = imgCanvas.getBoundingClientRect();
+      ox = (e.clientX - rect.left) * (W / rect.width) - bx;
+      oy = (e.clientY - rect.top) * (H / rect.height) - by;
+      e.preventDefault();
     });
+
+    dragBox.addEventListener('touchstart', e => {
+      dragging = true;
+      const { scaleX, scaleY } = boxDisplaySize();
+      const rect = imgCanvas.getBoundingClientRect();
+      ox = (e.touches[0].clientX - rect.left) * (W / rect.width) - bx;
+      oy = (e.touches[0].clientY - rect.top) * (H / rect.height) - by;
+      e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('mouseup', () => { dragging = false; dragBox.style.cursor = 'grab'; });
+    document.addEventListener('touchend', () => { dragging = false; });
+
+    updateDragBoxStyle();
+    drawZoom();
   }
 
   // ─── HELPERS ─────────────────────────────────────────
