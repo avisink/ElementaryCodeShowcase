@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Mixer — Code Class</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f0f1a;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 28px;
+    }
+
+    .game-wrap {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    /* Top row: target / your mix / streak */
+    .top-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      background: #1a1a2e;
+      border: 1px solid #2a2a45;
+      border-radius: 16px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .panel-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .color-box {
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      margin: 0 auto 8px;
+      border: 2px solid #2a2a45;
+      transition: background 0.1s;
+    }
+
+    .color-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ccc;
+    }
+
+    .big-num {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 16px;
+    }
+
+    /* Streak dots */
+    .streak-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 14px;
+    }
+
+    .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #2a2a45;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .dot.lit {
+      background: #f0a020;
+      transform: scale(1.2);
+    }
+
+    /* Challenge card */
+    .challenge-card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a45;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+
+    .challenge-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: #1e3a5f;
+      color: #7eb8f7;
+      margin-bottom: 10px;
+    }
+
+    .challenge-text {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #ddd;
+    }
+
+    .hints-area {
+      margin-top: 10px;
+    }
+
+    .hint-item {
+      font-size: 13px;
+      color: #aaa;
+      padding: 4px 0 4px 18px;
+      position: relative;
+    }
+
+    .hint-item::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: #f0a020;
+    }
+
+    /* Sliders */
+    .sliders-card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a45;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .slider-row:last-child { margin-bottom: 0; }
+
+    .slider-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .slider-letter {
+      font-size: 14px;
+      font-weight: 700;
+      width: 14px;
+      flex-shrink: 0;
+    }
+
+    input[type=range] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: #2a2a45;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    #r { accent-color: #e05050; }
+    #g { accent-color: #50c878; }
+    #b { accent-color: #5090e0; }
+
+    .slider-val {
+      font-size: 14px;
+      font-weight: 600;
+      min-width: 34px;
+      text-align: right;
+      color: #aaa;
+      font-family: monospace;
+    }
+
+    /* Feedback */
+    #feedback {
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      min-height: 26px;
+      color: #aaa;
+      margin-bottom: 14px;
+      transition: color 0.3s;
+    }
+
+    #feedback.good { color: #50c878; }
+    #feedback.close { color: #f0a020; }
+    #feedback.far { color: #e05050; }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 8px;
+      border-radius: 12px;
+      border: 1px solid #3a3a60;
+      background: #1a1a2e;
+      color: #ddd;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    button:hover { background: #25253d; }
+    button:active { transform: scale(0.97); }
+
+    button.primary {
+      background: #1e3a5f;
+      border-color: #3a6a9f;
+      color: #7eb8f7;
+    }
+
+    button.primary:hover { background: #254878; }
+
+    /* Code panel */
+    .code-panel {
+      background: #0a0a14;
+      border: 1px solid #2a2a45;
+      border-left: 3px solid #378add;
+      border-radius: 0 12px 12px 0;
+      padding: 14px 16px;
+    }
+
+    .code-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .code-line {
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      color: #7eb8f7;
+    }
+
+    .code-line .kw { color: #c792ea; }
+    .code-line .num-r { color: #f07070; }
+    .code-line .num-g { color: #70c880; }
+    .code-line .num-b { color: #7090e0; }
+
+    .target-code-row {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #1a1a2e;
+      display: none;
+    }
+
+    .target-code-row .code-line { color: #50c878; }
+
+    /* Win flash */
+    @keyframes flashWin {
+      0% { border-color: #2a2a45; }
+      50% { border-color: #50c878; box-shadow: 0 0 20px rgba(80,200,120,0.3); }
+      100% { border-color: #2a2a45; }
+    }
+    .win-flash { animation: flashWin 0.6s ease; }
+  </style>
+</head>
+<body>
+
+  <h1>Color Mixer</h1>
+  <p class="subtitle">mix red + green + blue numbers to match the target color</p>
+
+  <div class="game-wrap">
+
+    <div class="top-row">
+      <div class="panel">
+        <div class="panel-label">match this</div>
+        <div class="color-box" id="target-box"></div>
+        <div class="color-name" id="target-name"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-label">your mix</div>
+        <div class="color-box" id="mix-box"></div>
+        <div class="big-num" id="score-display">—</div>
+      </div>
+      <div class="panel">
+        <div class="panel-label">streak 🔥</div>
+        <div class="streak-dots" id="streak-dots"></div>
+        <div class="big-num" id="streak-count">0</div>
+      </div>
+    </div>
+
+    <div class="challenge-card" id="challenge-card">
+      <div class="challenge-badge" id="challenge-badge">challenge 1</div>
+      <div class="challenge-text" id="challenge-text"></div>
+      <div class="hints-area" id="hints-area"></div>
+    </div>
+
+    <div class="sliders-card">
+      <div class="slider-row">
+        <div class="slider-swatch" style="background:#e05050;"></div>
+        <span class="slider-letter" style="color:#e05050;">R</span>
+        <input type="range" id="r" min="0" max="255" value="128" step="1" />
+        <span class="slider-val" id="r-val">128</span>
+      </div>
+      <div class="slider-row">
+        <div class="slider-swatch" style="background:#50c878;"></div>
+        <span class="slider-letter" style="color:#50c878;">G</span>
+        <input type="range" id="g" min="0" max="255" value="128" step="1" />
+        <span class="slider-val" id="g-val">128</span>
+      </div>
+      <div class="slider-row">
+        <div class="slider-swatch" style="background:#5090e0;"></div>
+        <span class="slider-letter" style="color:#5090e0;">B</span>
+        <input type="range" id="b" min="0" max="255" value="128" step="1" />
+        <span class="slider-val" id="b-val">128</span>
+      </div>
+    </div>
+
+    <div id="feedback"></div>
+
+    <div class="btn-row">
+      <button class="primary" onclick="checkMatch()">✓ check my mix</button>
+      <button onclick="showHint()">💡 hint</button>
+      <button onclick="nextChallenge()">skip →</button>
+    </div>
+
+    <div class="code-panel">
+      <div class="code-label">live code — updates as you slide</div>
+      <div class="code-line" id="live-code"></div>
+      <div class="target-code-row" id="target-code-row">
+        <div class="code-label" style="margin-top:0;">target color code</div>
+        <div class="code-line" id="target-code"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const challenges = [
+      {
+        name: "pure red",
+        r: 255, g: 0, b: 0,
+        text: "Make pure red! Drag R all the way up, and put G and B all the way down.",
+        hints: [
+          "R = 255 means full red",
+          "G and B should both be 0",
+          "Think of a fire truck!"
+        ]
+      },
+      {
+        name: "pure blue",
+        r: 0, g: 0, b: 255,
+        text: "Now make pure blue! Only one slider goes up this time.",
+        hints: [
+          "Only the B slider goes up",
+          "R and G both stay at 0",
+          "Think of the ocean!"
+        ]
+      },
+      {
+        name: "yellow",
+        r: 255, g: 255, b: 0,
+        text: "Yellow is sneaky — there's no yellow slider! Can you figure it out?",
+        hints: [
+          "On screens, Red + Green = Yellow",
+          "B stays at 0",
+          "Both R and G go all the way to 255!"
+        ]
+      },
+      {
+        name: "white",
+        r: 255, g: 255, b: 255,
+        text: "Can you make white? What happens when ALL three colors are full?",
+        hints: [
+          "All three sliders go to max",
+          "255, 255, 255",
+          "All light mixed together = white!"
+        ]
+      },
+      {
+        name: "black",
+        r: 0, g: 0, b: 0,
+        text: "Make complete darkness — the absence of all color and light.",
+        hints: [
+          "All sliders go to zero",
+          "0, 0, 0",
+          "No light at all = black!"
+        ]
+      },
+      {
+        name: "orange",
+        r: 255, g: 140, b: 0,
+        text: "Orange — there's no orange slider! You have to mix it from what you have.",
+        hints: [
+          "Start with R all the way up",
+          "Add some G — try around 140",
+          "Keep B at zero"
+        ]
+      },
+      {
+        name: "purple",
+        r: 128, g: 0, b: 128,
+        text: "Mix purple using only two sliders. Which two colors make purple?",
+        hints: [
+          "Red and Blue make purple",
+          "G stays at 0",
+          "Try R and B both at 128"
+        ]
+      },
+      {
+        name: "sky blue",
+        r: 135, g: 206, b: 235,
+        text: "Match the color of a clear sky on a sunny day!",
+        hints: [
+          "Blue is the highest — near 235",
+          "Green is second — around 200",
+          "Red is lower — around 135"
+        ]
+      },
+      {
+        name: "hot pink",
+        r: 255, g: 20, b: 147,
+        text: "Make hot pink — bright and bold. Mostly red with a twist of blue.",
+        hints: [
+          "R goes all the way to 255",
+          "B goes medium-high, around 147",
+          "G stays very low — around 20"
+        ]
+      },
+      {
+        name: "lime green",
+        r: 50, g: 205, b: 50,
+        text: "Bright lime green — the color of a highlighter marker!",
+        hints: [
+          "G is very high — around 205",
+          "R and B are both low and equal",
+          "Try R = 50, B = 50"
+        ]
+      }
+    ];
+
+    let current = 0;
+    let streak = 0;
+    let hintIndex = 0;
+    let checkedThisRound = false;
+
+    function buildStreakDots() {
+      const el = document.getElementById('streak-dots');
+      el.innerHTML = '';
+      for (let i = 0; i < 5; i++) {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i < streak ? ' lit' : '');
+        d.id = 'dot' + i;
+        el.appendChild(d);
+      }
+    }
+
+    function updateStreakDisplay() {
+      document.getElementById('streak-count').textContent = streak;
+      for (let i = 0; i < 5; i++) {
+        const d = document.getElementById('dot' + i);
+        if (d) d.className = 'dot' + (i < streak ? ' lit' : '');
+      }
+    }
+
+    function loadChallenge(index) {
+      const c = challenges[index % challenges.length];
+      document.getElementById('challenge-badge').textContent = 'challenge ' + (index + 1);
+      document.getElementById('challenge-text').textContent = c.text;
+      document.getElementById('target-box').style.background = `rgb(${c.r},${c.g},${c.b})`;
+      document.getElementById('target-name').textContent = c.name;
+      document.getElementById('hints-area').innerHTML = '';
+      document.getElementById('feedback').textContent = '';
+      document.getElementById('feedback').className = '';
+      document.getElementById('score-display').textContent = '—';
+      document.getElementById('target-code-row').style.display = 'none';
+      hintIndex = 0;
+      checkedThisRound = false;
+
+      document.getElementById('r').value = 128;
+      document.getElementById('g').value = 128;
+      document.getElementById('b').value = 128;
+      updateMix();
+    }
+
+    function updateMix() {
+      const r = +document.getElementById('r').value;
+      const g = +document.getElementById('g').value;
+      const b = +document.getElementById('b').value;
+      document.getElementById('r-val').textContent = r;
+      document.getElementById('g-val').textContent = g;
+      document.getElementById('b-val').textContent = b;
+      document.getElementById('mix-box').style.background = `rgb(${r},${g},${b})`;
+      document.getElementById('live-code').innerHTML =
+        `<span class="kw">color</span> = rgb(<span class="num-r">${r}</span>, <span class="num-g">${g}</span>, <span class="num-b">${b}</span>)`;
+    }
+
+    function checkMatch() {
+      const c = challenges[current % challenges.length];
+      const r = +document.getElementById('r').value;
+      const g = +document.getElementById('g').value;
+      const b = +document.getElementById('b').value;
+      const diff = Math.abs(r - c.r) + Math.abs(g - c.g) + Math.abs(b - c.b);
+      const score = Math.max(0, Math.round(100 - diff / 7.65));
+
+      document.getElementById('score-display').textContent = score + '%';
+
+      const fb = document.getElementById('feedback');
+      const won = score >= 88;
+
+      if (score === 100) {
+        fb.textContent = 'PERFECT! You wrote the exact code!';
+        fb.className = 'good';
+      } else if (won) {
+        fb.textContent = 'Amazing match! So close to perfect!';
+        fb.className = 'good';
+      } else if (score >= 70) {
+        fb.textContent = 'So close! Try tweaking one slider a tiny bit.';
+        fb.className = 'close';
+      } else if (score >= 45) {
+        fb.textContent = 'Getting warmer — check the hints!';
+        fb.className = 'close';
+      } else {
+        fb.textContent = 'Keep experimenting — every try is learning!';
+        fb.className = 'far';
+      }
+
+      document.getElementById('target-code').innerHTML =
+        `<span class="kw">color</span> = rgb(<span class="num-r">${c.r}</span>, <span class="num-g">${c.g}</span>, <span class="num-b">${c.b}</span>)`;
+      document.getElementById('target-code-row').style.display = 'block';
+
+      if (!checkedThisRound) {
+        if (won) {
+          streak = Math.min(streak + 1, 5);
+        } else {
+          streak = 0;
+        }
+        updateStreakDisplay();
+        checkedThisRound = true;
+      }
+
+      if (won) {
+        document.getElementById('challenge-card').classList.add('win-flash');
+        setTimeout(() => {
+          document.getElementById('challenge-card').classList.remove('win-flash');
+          nextChallenge();
+        }, 1400);
+      }
+    }
+
+    function showHint() {
+      const c = challenges[current % challenges.length];
+      if (hintIndex >= c.hints.length) {
+        document.getElementById('feedback').textContent = 'No more hints — you got this!';
+        document.getElementById('feedback').className = 'close';
+        return;
+      }
+      const area = document.getElementById('hints-area');
+      const p = document.createElement('div');
+      p.className = 'hint-item';
+      p.textContent = c.hints[hintIndex];
+      area.appendChild(p);
+      hintIndex++;
+    }
+
+    function nextChallenge() {
+      current++;
+      loadChallenge(current);
+    }
+
+    ['r', 'g', 'b'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateMix);
+    });
+
+    buildStreakDots();
+    loadChallenge(0);
+  </script>
+</body>
+</html>
